@@ -27,6 +27,9 @@ import time
 
 class TCS3200:
     
+    # Frequency Array
+    data_array = []
+    
     # Constants to control the LEDs on the TCS3200 module    
     ON = True
     OFF = False
@@ -53,6 +56,8 @@ class TCS3200:
         self.led = Pin(led, Pin.OUT)
         self.debug = False
         self.led.value(0) # To set the LEDs off
+        # For frequency checking
+        self.stop_flag = False
         
     # Function to turn on or off white LEDs on the module        
     def setLeds(self, state=OFF):
@@ -103,10 +108,18 @@ class TCS3200:
     def getPhotodiode(self):
         return self.s2.value(), self.s3.value()
         
-    # Function to read the frequency from the OUT pin
+   # Function to read the frequency from the OUT pin
     def readFreq(self):
-        for _ in range(1000):
-            print(self.out.value())
+        return self.out.value()
+    
+    # Change stop flag to True
+    def setStop(self):
+        self.stop_flag = ON
+        print("Done")
+        
+    # Display flag
+    def showStopFlag(self):
+        return self.stop_flag
             
     
     

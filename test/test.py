@@ -21,11 +21,14 @@ Date: 23rd June, 2022
 """
 
 # IMPORTING LIBRARIES
-from machine import Pin
+from machine import Pin, Timer
 import time
 
 
 class TCS3200:
+    
+    # Frequency Array
+    data_array = []
     
     # Constants to control the LEDs on the TCS3200 module    
     ON = True
@@ -52,6 +55,8 @@ class TCS3200:
         self.led = Pin(led, Pin.OUT)
         self.debug = False
         self.led.value(0) # To set the LEDs off
+        # For frequency checking
+        self.stop_flag = False
         
     # Function to turn on or off white LEDs on the module        
     def setLeds(self, state=OFF):
@@ -103,11 +108,20 @@ class TCS3200:
         
     # Function to read the frequency from the OUT pin
     def readFreq(self):
-#         for _ in range(1000):
-        while True:
-            print(self.out.value())
+        return self.out.value()
+    
+    # Change stop flag to True
+    def setStop(self):
+        self.stop_flag = True
+        print("Done")
+        
+    # Display flag
+    def showStopFlag(self):
+        return self.stop_flag
 
 
+
+# Test Code
 
 tcs = TCS3200()
 # tcs.setDebug(True)
@@ -117,5 +131,16 @@ tcs.setLeds(tcs.ON)
 # print(tcs.lightState())
 tcs.selectFrequency(tcs.TWO_PERCENT)
 tcs.selectPhotodiode(tcs.CLEAR)
-tcs.readFreq()
+# tcs.readFreq()
+print(tcs.showStopFlag())
 
+tim0 = Timer(0)
+tim0.init(period=100, mode=Timer.ONE_SHOT, callback=lambda t:tcs.setStop())
+
+
+while tcs.showStopFlag() == False:
+    tcs.data_array.append(tcs.readFreq())
+    print(tcs.readFreq())
+
+# print(tcs.showStopFlag())
+print(tcs.data_array)
