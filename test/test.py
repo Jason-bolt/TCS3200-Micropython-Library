@@ -137,10 +137,18 @@ print(tcs.showStopFlag())
 tim0 = Timer(0)
 tim0.init(period=100, mode=Timer.ONE_SHOT, callback=lambda t:tcs.setStop())
 
-
+# Storing the data in the data array
 while tcs.showStopFlag() == False:
     tcs.data_array.append(tcs.readFreq())
     print(tcs.readFreq())
 
 # print(tcs.showStopFlag())
-print(tcs.data_array)
+print(tcs.data_array) # Displaying the data array
+
+
+# Writing to a file
+with open("data_file.txt", 'w') as file:
+    for i in tcs.data_array:
+        file.write(str(i))
+        file.write('\n')
+print("Done")
