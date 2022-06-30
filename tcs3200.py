@@ -26,7 +26,25 @@ import time
 
 
 class TCS3200:
-    def __init__(self, s0, s1, s2, s3, out, led): # First function to run when the class is called
+    
+    # Constants to control the LEDs on the TCS3200 module    
+    ON = True
+    OFF = False
+    
+    # Constants to scale the output frequency
+    POWER_DOWN = (0, 0)
+    TWO_PERCENT = (0, 1)
+    TWENTY_PERCENT = (1, 0)
+    HUNDRED_PERCENT = (1, 1)
+    
+    # Constants for the selecting the color
+    RED = (0, 0)
+    BLUE = (0, 1)
+    CLEAR = (1, 0)
+    GREEN = (1, 1)
+    
+    
+    def __init__(self, s0=23, s1=5, s2=26, s3=18, out=22, led=19): # First function to run when the class is called
         self.s0 = Pin(s0, Pin.OUT)
         self.s1 = Pin(s1, Pin.OUT)
         self.s2 = Pin(s2, Pin.OUT)
@@ -36,19 +54,23 @@ class TCS3200:
         self.debug = False
         self.led.value(0) # To set the LEDs off
         
-    # Function to turn on white LEDs on the module        
-    def turnLightOn(self):
-        self.led.value(1)
+    # Function to turn on or off white LEDs on the module        
+    def setLeds(self, state=OFF):
+        if state:
+            self.led.value(1)
+            if self.debug:
+                print("Switching LEDs on")
+        else:
+            self.led.value(0)
+            if self.debug:
+                print("Switching LEDs off")
+            
     
     # Function to turn on white LEDs on the module
     def turnLightOff(self):
         self.led.value(0)
         
-    # Function to determine the state of the LEDs on the module
-    def lightValue(self):
-        return "On" if self.led.value() == 1 else "Off"
-    
-    # Show or not show debuging messages
+       # Show or not show debuging messages
     def setDebug(self, value=None):
         if value == None or value == False:
             self.debug = False
@@ -57,3 +79,34 @@ class TCS3200:
             self.debug = True
             return "Debug mode is turned on"
         
+    # Function to select the filter or color to be measured
+    def selectFrequency(self, value: tuple):
+        if type(value) is not tuple:
+            raise TypeError("value should be a tuple")
+        # Set frequency    
+        self.s0.value(0)
+        self.s1.value(1)
+        
+    # Get current selected frequency
+    def getFrequency(self):
+        return self.s0.value(), self.s1.value()
+    
+    # Function to select the photodiode
+    def selectPhotodiode(self, value: tuple):
+        if type(value) is not tuple:
+            raise TypeError("value should be a tuple")
+        # Set photodiode type    
+        self.s2.value(0)
+        self.s3.value(1)
+    
+    # Get current selected photodiode configuration
+    def getPhotodiode(self):
+        return self.s2.value(), self.s3.value()
+        
+    # Function to read the frequency from the OUT pin
+    def readFreq(self):
+        for _ in range(1000):
+            print(self.out.value())
+            
+    
+    
