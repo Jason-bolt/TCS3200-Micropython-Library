@@ -46,6 +46,17 @@ class TCS3200:
     CLEAR = (1, 0)
     GREEN = (1, 1)
     
+    # Color calibrations
+    RED_BLACK = 16
+    RED_WHITE = 154
+    
+    BLUE_BLACK = 18
+    BLUE_WHITE = 173
+    
+    GREEN_BLACK = 14
+    GREEN_WHITE = 146
+    
+    
     def __init__(self, s0=23, s1=5, s2=26, s3=18, out=22, led=19): # First function to run when the class is called
         self.s0 = Pin(s0, Pin.OUT)
         self.s1 = Pin(s1, Pin.OUT)
@@ -57,6 +68,9 @@ class TCS3200:
         self.led.value(0) # To set the LEDs off
         # For frequency checking
         self.stop_flag = False
+    
+    def test(self):
+        print(BLUE_BLACK)
         
     # Function to turn on or off white LEDs on the module        
     def setLeds(self, state=OFF):
@@ -118,6 +132,85 @@ class TCS3200:
     # Display flag
     def showStopFlag(self):
         return self.stop_flag
+    
+    def _getFreq(self, array):
+        count = 0
+        pulseOn = False
+        for i in array:
+            if i == 1 and not pulseOn:
+                count+=1
+                pulseOn = True
+            if i == 0:
+                pulseOn = False
+        return count
+    
+    # Test frequency output
+    def _testFreq(self, frequency, color_comp):
+        self.selectFrequency(frequency)
+        self.selectPhotodiode(color_comp)
+        data_array = []
+        tim0 = Timer(0)
+        tim0.init(period=100, mode=Timer.ONE_SHOT, callback=lambda t:self.setStop())
+        # Storing the data in the data array
+        while self.showStopFlag() == False:
+            data_array.append(self.readFreq())
+#             print(self.readFreq())
+
+        # Show frequency
+        frequency = self._getFreq(data_array)
+        return frequency
+#         print(self._getFreq(data_array))
+#         print(data_array) # Displaying the data array
+
+        # Writing to a file
+#         with open("data_file.txt", 'w') as file:
+#             for i in data_array:
+#                 file.write(str(i))
+#                 file.write('\n')
+#         print("Done")
+
+    def _mapColor(self, red, green, blue):
+        mapped_red = mapped_blue = mapped_black = 0
+        
+        mapped_red = (red - self.RED_BLACK) * 255 / (self.RED_WHITE - self.RED_BLACK)
+        mapped_green = (green - self.GREEN_BLACK) * 255 / (self.GREEN_WHITE - self.GREEN_BLACK)
+        mapped_blue = (blue - self.BLUE_BLACK) * 255 / (self.BLUE_WHITE - self.BLUE_BLACK)
+        
+#         if red <= self.RED_BLACK:
+#             mapped_red = self.RED_BLACK
+#         else:
+#             value = red / (self.RED_WHITE * 255)
+# #             value = value * 255
+#             mapped_red = round(value)
+#             
+#         if green <= self.GREEN_BLACK:
+#             mapped_green = self.GREEN_BLACK
+#         else:
+#             value = green / (self.GREEN_WHITE * 255)
+#             value = value * self.GREEN_WHITE
+#             mapped_green = round(value)
+#             
+#         if blue <= self.BLUE_BLACK:
+#             mapped_blue = self.BLUE_BLACK
+#         else:
+#             value = blue / (self.BLUE_WHITE * 255)
+# #             value = value * self.BLUE_WHITE
+#             mapped_blue = round(value)
+            
+        return mapped_red, mapped_green, mapped_blue
+    
+
+    def readColor(self, percentage):
+        red_raw = self._testFreq(percentage, self.RED)
+        green_raw = self._testFreq(self.TWO_PERCENT, self.GREEN)
+        blue_raw = self._testFreq(self.TWO_PERCENT, self.BLUE)
+        print(red_raw, green_raw, blue_raw)
+        red, green, blue = self._mapColor(red_raw, green_raw, blue_raw)
+#         print(green)
+        return (red, green, blue)
+        
+        
+
 
 
 
@@ -129,26 +222,13 @@ tcs = TCS3200()
 # time.sleep(2)
 tcs.setLeds(tcs.ON)
 # print(tcs.lightState())
-tcs.selectFrequency(tcs.TWO_PERCENT)
-tcs.selectPhotodiode(tcs.CLEAR)
 # tcs.readFreq()
-print(tcs.showStopFlag())
-
-tim0 = Timer(0)
-tim0.init(period=100, mode=Timer.ONE_SHOT, callback=lambda t:tcs.setStop())
-
-# Storing the data in the data array
-while tcs.showStopFlag() == False:
-    tcs.data_array.append(tcs.readFreq())
-    print(tcs.readFreq())
-
-# print(tcs.showStopFlag())
-print(tcs.data_array) # Displaying the data array
+# tcs._testFreq(tcs.TWO_PERCENT, tcs.GREEN)
+print(tcs._testFreq(tcs.TWO_PERCENT, tcs.BLUE))
+# print(tcs._mapColor(200, 2, 2))
 
 
-# Writing to a file
-with open("data_file.txt", 'w') as file:
-    for i in tcs.data_array:
-        file.write(str(i))
-        file.write('\n')
-print("Done")
+# print(tcs.readColor(tcs.TWO_PERCENT))
+
+
+
