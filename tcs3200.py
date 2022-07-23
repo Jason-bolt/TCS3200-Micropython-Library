@@ -47,14 +47,14 @@ class TCS3200:
     GREEN = (1, 1)
     
     # Color calibrations
-    RED_BLACK = 16
-    RED_WHITE = 154
+    RED_BLACK = 225 #197 #16
+    RED_WHITE = 1800 #1651 #154
     
-    BLUE_BLACK = 15
-    BLUE_WHITE = 145
+    BLUE_BLACK = 420 #196 #18
+    BLUE_WHITE = 2180 #1683 #173
     
-    GREEN_BLACK = 14
-    GREEN_WHITE = 146
+    GREEN_BLACK = 260 #178 #14
+    GREEN_WHITE = 1720 #1605 #146
     
     
     def __init__(self, s0=23, s1=5, s2=26, s3=18, out=22, led=19): # First function to run when the class is called
@@ -101,8 +101,8 @@ class TCS3200:
         if type(value) is not tuple:
             raise TypeError("value should be a tuple")
         # Set frequency    
-        self.s0.value(0)
-        self.s1.value(1)
+        self.s0.value(value[0])
+        self.s1.value(value[1])
         
     # Get current selected frequency
     def getFrequency(self):
@@ -113,8 +113,8 @@ class TCS3200:
         if type(value) is not tuple:
             raise TypeError("value should be a tuple")
         # Set photodiode type    
-        self.s2.value(0)
-        self.s3.value(1)
+        self.s2.value(value[0])
+        self.s3.value(value[1])
     
     # Get current selected photodiode configuration
     def getPhotodiode(self):
@@ -145,12 +145,12 @@ class TCS3200:
         return count
     
     # Test frequency output
-    def _testFreq(self, frequency, scale):
+    def _testFreq(self, frequency, color_comp):
         self.selectFrequency(frequency)
-        self.selectPhotodiode(scale)
+        self.selectPhotodiode(color_comp)
         data_array = []
         tim0 = Timer(0)
-        tim0.init(period=100, mode=Timer.ONE_SHOT, callback=lambda t:self.setStop())
+        tim0.init(period=1200, mode=Timer.ONE_SHOT, callback=lambda t:self.setStop())
         # Storing the data in the data array
         while self.showStopFlag() == False:
             data_array.append(self.readFreq())
@@ -170,34 +170,41 @@ class TCS3200:
 #         print("Done")
 
     def _mapColor(self, red, green, blue):
-        if red <= self.RED_BLACK:
-            mapped_red = self.RED_BLACK
-        else:
-            value = red / 255
-            value = value * self.RED_WHITE
-            mapped_red = round(value)
-            
-        if green <= self.GREEN_BLACK:
-            mapped_green = self.GREEN_BLACK
-        else:
-            value = green / 255
-            value = value * self.GREEN_WHITE
-            mapped_green = round(value)
-            
-        if blue <= self.BLUE_BLACK:
-            mapped_blue = self.BLUE_BLACK
-        else:
-            value = blue / 255
-            value = value * self.BLUE_WHITE
-            mapped_blue = round(value)
+        mapped_red = mapped_blue = mapped_black = 0
+        
+        mapped_red = (red - self.RED_BLACK) * 255 / (self.RED_WHITE - self.RED_BLACK)
+        mapped_green = (green - self.GREEN_BLACK) * 255 / (self.GREEN_WHITE - self.GREEN_BLACK)
+        mapped_blue = (blue - self.BLUE_BLACK) * 255 / (self.BLUE_WHITE - self.BLUE_BLACK)
+        
+#         if red <= self.RED_BLACK:
+#             mapped_red = self.RED_BLACK
+#         else:
+#             value = red / (self.RED_WHITE * 255)
+# #             value = value * 255
+#             mapped_red = round(value)
+#             
+#         if green <= self.GREEN_BLACK:
+#             mapped_green = self.GREEN_BLACK
+#         else:
+#             value = green / (self.GREEN_WHITE * 255)
+#             value = value * self.GREEN_WHITE
+#             mapped_green = round(value)
+#             
+#         if blue <= self.BLUE_BLACK:
+#             mapped_blue = self.BLUE_BLACK
+#         else:
+#             value = blue / (self.BLUE_WHITE * 255)
+# #             value = value * self.BLUE_WHITE
+#             mapped_blue = round(value)
             
         return mapped_red, mapped_green, mapped_blue
     
 
     def readColor(self, percentage):
         red_raw = self._testFreq(percentage, self.RED)
-        green_raw = self._testFreq(self.TWO_PERCENT, self.GREEN)
-        blue_raw = self._testFreq(self.TWO_PERCENT, self.BLUE)
+        green_raw = self._testFreq(percentage, self.GREEN)
+        blue_raw = self._testFreq(percentage, self.BLUE)
+        print(red_raw, green_raw, blue_raw)
         red, green, blue = self._mapColor(red_raw, green_raw, blue_raw)
 #         print(green)
         return (red, green, blue)
