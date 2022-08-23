@@ -21,7 +21,7 @@ Date: 23rd June, 2022
 """
 
 # IMPORTING LIBRARIES
-from machine import Pin
+from machine import Pin, Timer
 import time
 
 
@@ -127,7 +127,7 @@ class TCS3200:
     # Change stop flag to True
     def setStop(self):
         self.stop_flag = True
-        print("Done")
+#         print("Done")
         
     # Display flag
     def showStopFlag(self):
@@ -154,20 +154,12 @@ class TCS3200:
         # Storing the data in the data array
         while self.showStopFlag() == False:
             data_array.append(self.readFreq())
+        self.stop_flag = False
 #             print(self.readFreq())
 
         # Show frequency
         frequency = self._getFreq(data_array)
         return frequency
-#         print(self._getFreq(data_array))
-#         print(data_array) # Displaying the data array
-
-        # Writing to a file
-#         with open("data_file.txt", 'w') as file:
-#             for i in data_array:
-#                 file.write(str(i))
-#                 file.write('\n')
-#         print("Done")
 
     def _mapColor(self, red, green, blue):
         mapped_red = mapped_blue = mapped_black = 0
@@ -176,27 +168,6 @@ class TCS3200:
         mapped_green = (green - self.GREEN_BLACK) * 255 / (self.GREEN_WHITE - self.GREEN_BLACK)
         mapped_blue = (blue - self.BLUE_BLACK) * 255 / (self.BLUE_WHITE - self.BLUE_BLACK)
         
-#         if red <= self.RED_BLACK:
-#             mapped_red = self.RED_BLACK
-#         else:
-#             value = red / (self.RED_WHITE * 255)
-# #             value = value * 255
-#             mapped_red = round(value)
-#             
-#         if green <= self.GREEN_BLACK:
-#             mapped_green = self.GREEN_BLACK
-#         else:
-#             value = green / (self.GREEN_WHITE * 255)
-#             value = value * self.GREEN_WHITE
-#             mapped_green = round(value)
-#             
-#         if blue <= self.BLUE_BLACK:
-#             mapped_blue = self.BLUE_BLACK
-#         else:
-#             value = blue / (self.BLUE_WHITE * 255)
-# #             value = value * self.BLUE_WHITE
-#             mapped_blue = round(value)
-            
         return mapped_red, mapped_green, mapped_blue
     
 
@@ -208,6 +179,7 @@ class TCS3200:
         red, green, blue = self._mapColor(red_raw, green_raw, blue_raw)
 #         print(green)
         return (red, green, blue)
-            
-    
-    
+        
+
+
+
