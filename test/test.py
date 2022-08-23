@@ -127,7 +127,7 @@ class TCS3200:
     # Change stop flag to True
     def setStop(self):
         self.stop_flag = True
-        print("Done")
+#         print("Done")
         
     # Display flag
     def showStopFlag(self):
@@ -154,6 +154,7 @@ class TCS3200:
         # Storing the data in the data array
         while self.showStopFlag() == False:
             data_array.append(self.readFreq())
+        self.stop_flag = False
 #             print(self.readFreq())
 
         # Show frequency
@@ -196,12 +197,14 @@ tcs.setLeds(tcs.ON)
 # tcs._testFreq(tcs.TWO_PERCENT, tcs.GREEN)
 # print(tcs._testFreq(tcs.TWO_PERCENT, tcs.RED))
 # time.sleep(10)
-print(tcs._testFreq(tcs.TWO_PERCENT, tcs.GREEN))
-print(tcs._testFreq(tcs.TWO_PERCENT, tcs.BLUE))
+
+# print(tcs._testFreq(tcs.TWO_PERCENT, tcs.GREEN))
+# print(tcs._testFreq(tcs.TWO_PERCENT, tcs.BLUE))
+
 # print(tcs._mapColor(200, 2, 2))
 
 
-# print(tcs.readColor(tcs.TWO_PERCENT))
+print(tcs.readColor(tcs.TWO_PERCENT))
 
 
 
